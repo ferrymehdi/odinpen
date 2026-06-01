@@ -39,9 +39,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y libglfw3-dev libgl1-mesa-dev
 
       - name: Setup Odin
-        uses: layr/setup-odin@v2
+        uses: laytan/setup-odin@v2
         with:
-          version: 'dev-2024-04'
+          version: 'latest'
 
       - name: Build Project
         run: odin build . -target:${{ matrix.target }} -out:${{ matrix.out }} -opt:speed
