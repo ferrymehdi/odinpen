@@ -236,7 +236,7 @@ execute_new_dir :: proc(fe: ^file_explorer) {
 	path, err := filepath.join({fe.current_dir, name})
 	if err == nil {
 		defer delete(path)
-		os.make_directory(path, os.O_DIR)
+		os.make_directory(path)
 	}
 	refresh(fe)
 }
