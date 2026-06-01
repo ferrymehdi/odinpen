@@ -1,0 +1,53 @@
+name: Build Odinpen
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: linux_amd64
+            out: odinpen_linux_amd64
+          - os: ubuntu-24.04-arm
+            target: linux_arm64
+            out: odinpen_linux_arm64
+          - os: windows-latest
+            target: windows_amd64
+            out: odinpen_windows_amd64.exe
+          - os: macos-13
+            target: darwin_amd64
+            out: odinpen_macos_amd64
+          - os: macos-latest
+            target: darwin_arm64
+            out: odinpen_macos_arm64
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libglfw3-dev libgl1-mesa-dev
+
+      - name: Setup Odin
+        uses: layr/setup-odin@v2
+        with:
+          version: 'dev-2024-04'
+
+      - name: Build Project
+        run: odin build . -target:${{ matrix.target }} -out:${{ matrix.out }} -opt:speed
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.out }}
+          path: ${{ matrix.out }}
