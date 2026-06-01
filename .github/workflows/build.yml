@@ -41,7 +41,13 @@ jobs:
       - name: Setup Odin
         uses: laytan/setup-odin@v2
         with:
-          version: 'dev-2023-12' 
+          version: 'latest'
+
+      - name: Build STB (Linux only)
+        if: runner.os == 'Linux'
+        run: |
+          ODIN_PATH=$(dirname $(which odin))
+          make -C $ODIN_PATH/vendor/stb/src
 
       - name: Build Project
         run: odin build . -target:${{ matrix.target }} -out:${{ matrix.out }} -o:speed
