@@ -50,7 +50,7 @@ file_explorer :: struct {
 
 init :: proc(fe: ^file_explorer, path: string, open_file_cb: Callback) -> bool {
 	abs_path, ok := filepath.abs(path)
-	if !ok {
+	if ok != nil {
 		fe.current_dir = strings.clone(path)
 	} else {
 		fe.current_dir = abs_path
@@ -111,9 +111,9 @@ refresh :: proc(fe: ^file_explorer) -> bool {
 	if err != 0 do return false
 	defer os.close(f)
 
-	infos, err2 := os.read_dir(f, -1)
+	infos, err2 := os.read_dir(f, -1, context.temp_allocator)
 	if err2 != 0 do return false
-	defer os.file_info_slice_delete(infos)
+	defer os.file_info_slice_delete(infos, context.temp_allocator)
 
 	clear_entries(fe)
 
@@ -121,7 +121,7 @@ refresh :: proc(fe: ^file_explorer) -> bool {
 
 	for info in infos {
 		is_exec := false
-		append(&fe.entries, file_entry{strings.clone(info.name), info.is_dir, is_exec})
+		append(&fe.entries, file_entry{strings.clone(info.name), info.type == .Directory, is_exec})
 	}
 
 	slice.sort_by(fe.entries[:], proc(a, b: file_entry) -> bool {
@@ -182,7 +182,7 @@ remove_all :: proc(path: string) -> bool {
 		return os.remove(path) == 0
 	}
 
-	infos, err2 := os.read_dir(f, -1)
+	infos, err2 := os.read_dir(f, -1, context.temp_allocator)
 	if err2 != 0 {
 		os.close(f)
 		return os.remove(path) == 0
@@ -196,9 +196,9 @@ remove_all :: proc(path: string) -> bool {
 			remove_all(child_path)
 		}
 	}
-	os.file_info_slice_delete(infos)
+	os.file_info_slice_delete(infos, context.temp_allocator)
 
-	return os.remove_directory(path) == 0
+	return os.remove(path) == nil
 }
 
 execute_deletion :: proc(fe: ^file_explorer) {
@@ -236,7 +236,7 @@ execute_new_dir :: proc(fe: ^file_explorer) {
 	path, err := filepath.join({fe.current_dir, name})
 	if err == nil {
 		defer delete(path)
-		os.make_directory(path, 0o777)
+		os.make_directory(path, os.O_DIR)
 	}
 	refresh(fe)
 }
@@ -248,7 +248,7 @@ execute_new_file :: proc(fe: ^file_explorer) {
 	path, err := filepath.join({fe.current_dir, name})
 	if err == nil {
 		defer delete(path)
-		fd, err_open := os.open(path, os.O_CREATE | os.O_TRUNC | os.O_WRONLY, 0o666)
+		fd, err_open := os.open(path, os.O_CREATE | os.O_TRUNC | os.O_WRONLY, transmute(os.Permissions)u32(0o666))
 		if err_open == 0 {
 			os.close(fd)
 		}

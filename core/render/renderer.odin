@@ -301,8 +301,8 @@ init :: proc(r: ^renderer_state) {
 
 	for style in font_style {
 		path := style_paths[style]
-		data, ok := os.read_entire_file(path)
-		if !ok {
+		data, err := os.read_entire_file(path, context.allocator)
+		if err != nil {
 			fmt.eprintf("Warning: failed to load font style %v from %s\n", style, path)
 			if style != .Regular {
 				r.font_buffers[style] = nil

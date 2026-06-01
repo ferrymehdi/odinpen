@@ -538,9 +538,9 @@ collect_files_recursive :: proc(dir: string, files_list: ^[dynamic]string) {
 	if err != 0 do return
 	defer os.close(f)
 
-	infos, err2 := os.read_dir(f, -1)
+	infos, err2 := os.read_dir(f, -1, context.temp_allocator)
 	if err2 != 0 do return
-	defer os.file_info_slice_delete(infos)
+	defer os.file_info_slice_delete(infos, context.temp_allocator)
 
 	for info in infos {
 		if info.name == "." || info.name == ".." do continue
@@ -557,7 +557,7 @@ collect_files_recursive :: proc(dir: string, files_list: ^[dynamic]string) {
 		path, join_err := filepath.join({dir, info.name})
 		if join_err != nil do continue
 
-		if info.is_dir {
+		if info.type == .Directory {
 			collect_files_recursive(path, files_list)
 		} else {
 			append(files_list, path)

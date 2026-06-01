@@ -205,9 +205,9 @@ to_string :: proc(b: ^buffer, allocator := context.allocator) -> string {
 }
 
 load_from_file :: proc(b: ^buffer, path: string) -> bool {
-	data, ok := os.read_entire_file(path)
-	if !ok do return false
-	defer delete(data)
+	data, err := os.read_entire_file(path, context.allocator)
+	if err != nil do return false
+	defer delete(data, context.allocator)
 
 	destroy(b)
 	b.lines = make([dynamic][dynamic]u8, 0, 16)
@@ -241,10 +241,10 @@ save_to_file :: proc(b: ^buffer, path: string) -> bool {
 	}
 
 	ok := os.write_entire_file(path, out[:])
-	if ok {
+	if ok != nil {
 		b.flags -= {.Is_Updated}
 	}
-	return ok
+	return ok == nil
 }
 
 len_bytes :: proc(b: ^buffer) -> int {
