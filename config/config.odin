@@ -42,14 +42,31 @@ config :: struct {
 	font_bold_italic:    string,
 }
 
+when ODIN_OS == .Windows {
+	FONT_REGULAR :: "C:/Windows/Fonts/consola.ttf"
+	FONT_BOLD    :: "C:/Windows/Fonts/consolab.ttf"
+	FONT_ITALIC  :: "C:/Windows/Fonts/consolai.ttf"
+	FONT_BOLD_IT :: "C:/Windows/Fonts/consolaz.ttf"
+} else when ODIN_OS == .Darwin {
+	FONT_REGULAR :: "/System/Library/Fonts/Supplemental/Courier New.ttf"
+	FONT_BOLD    :: "/System/Library/Fonts/Supplemental/Courier New Bold.ttf"
+	FONT_ITALIC  :: "/System/Library/Fonts/Supplemental/Courier New Italic.ttf"
+	FONT_BOLD_IT :: "/System/Library/Fonts/Supplemental/Courier New Bold Italic.ttf"
+} else {
+	FONT_REGULAR :: "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf"
+	FONT_BOLD    :: "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Bold.ttf"
+	FONT_ITALIC  :: "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Italic.ttf"
+	FONT_BOLD_IT :: "/usr/share/fonts/liberation-mono-fonts/LiberationMono-BoldItalic.ttf"
+}
+
 global_config :: config {
 	ui_scale = 1.0,
 	tab_size = 4,
 	ignored_directories = {".git", "node_modules", "bin"},
-	font_regular = "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Regular.ttf",
-	font_bold = "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Bold.ttf",
-	font_italic = "/usr/share/fonts/liberation-mono-fonts/LiberationMono-Italic.ttf",
-	font_bold_italic = "/usr/share/fonts/liberation-mono-fonts/LiberationMono-BoldItalic.ttf",
+	font_regular = FONT_REGULAR,
+	font_bold = FONT_BOLD,
+	font_italic = FONT_ITALIC,
+	font_bold_italic = FONT_BOLD_IT,
 	colorscheme = color_scheme {
 		bg = {0.078, 0.078, 0.082, 1.0},
 		fg = {1.0, 1.0, 1.0, 1.0},
